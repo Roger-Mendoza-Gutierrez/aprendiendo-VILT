@@ -9,8 +9,7 @@ import Section from '@/MyComponents/Section.vue'
 import Skill from '@/MyComponents/Skill.vue'
 import Project from '@/MyComponents/Project.vue'
 import { BeakerIcon } from '@heroicons/vue/20/solid'
-import { defineAsyncComponent } from 'vue'
-import { ref } from 'vue';
+import { defineAsyncComponent, ref, reactive } from 'vue'
 
 defineProps({
     canLogin: Boolean,
@@ -27,6 +26,10 @@ const form = useForm({
 });
 const submit = () => {
     form.post(route('contact'));
+};
+
+const componentName = (index) => {
+    return defineAsyncComponent(() => import(`@heroicons/vue/20/solid/${projects[index].icon_name}Icon.js`));
 };
 
 /*function componentName(index) {
@@ -105,7 +108,9 @@ const submit = () => {
                     text-sm
                     text-gray-800
                     hover:bg-green-500" @click="contacting = true">
-                    Let's chat
+                    {{
+                    $page.props.flash.contacted ? 'Thanks' : 'Let\'s chat'
+                    }}
                 </JetPrimaryButton>
             </div>
         </div>
@@ -133,7 +138,9 @@ const submit = () => {
                 text-sm
                 text-gray-200
                 hover:bg-indigo-700" @click="contacting = true">
-                Get in touch
+                {{
+                $page.props.flash.contacted ? 'Thanks' : 'Get in touch'
+                }}
             </JetPrimaryButton>
         </div>
     </Section>
@@ -141,9 +148,9 @@ const submit = () => {
     <Section class="bg-gray-600 text-gray-200 h-screen">
         <h2 class="text-6xl font-bold pt-3">Projects</h2>
 
-        <div v-for="(project) in projects" :key="project.id">
+        <div v-for="(project, index) in projects" :key="project.id">
             <Project :title="project.title" :description="project.description" :color="project.color">
-                <BeakerIcon></BeakerIcon>
+                <component :is="componentName(index)"></component>
             </Project>
 
         </div>
@@ -156,7 +163,9 @@ const submit = () => {
                 text-sm
                 text-gray-800
                 hover:bg-purple-200" @click="contacting = true">
-                Now more
+                {{
+                $page.props.flash.contacted ? 'Thanks' : 'Now more'
+                }}
             </JetPrimaryButton>
         </div>
     </Section>
@@ -177,11 +186,10 @@ const submit = () => {
     </Section>
 
     <JetModal :show="contacting" :closeable="true" @close="contacting = null">
-        <div
-            v-if="$page.props.flash.contacted"
-            class="bg-green-400 shadow-2xl p-8 text-center font-bold"
-        >
-
+        <div v-if="$page.props.flash.contacted" class="bg-green-400 shadow-2xl p-8 text-center font-bold">
+            <p class="text-8xl m-5">👍</p>
+            <p class="text-5xl font-bold m-2">Thanks!</p>
+            <p class="text-xl m-2">I'll get back to you soon.</p>
         </div>
         <div v-else class="bg-gray-50 shadow-2xl p-8">
             <p class="text-gray-600 text-2xl font-extrabold text-center">Let me know some details</p>
@@ -200,9 +208,9 @@ const submit = () => {
 
                 <JetPrimaryButton class="px-5 py-3 mt-5 w-96 bg-purple-400 justify-center rounded-xl text-sm"
                     :disabled="form.processing">
-                    <pan class="animate-spin mr-1" v-show="form.processing">
+                    <span class="animate-spin mr-1" v-show="form.processing">
                         &#9696;
-                    </pan>
+                    </span>
                     <span v-show="!form.processing">
                         Get in touch
                     </span>
